@@ -926,6 +926,7 @@ WarpX::InitLevelData (int lev, Real /*time*/)
         Mzfield_parser = std::make_unique<amrex::Parser>(
                                  makeParser(str_Mz_ext_grid_function,{"x","y","z"}));
 
+        // this will be refactored
         {   // use this brace so Mx, My, Mz go out of scope
             // we need 1 more ghost cell than Mfield_fp has because
             // we are averaging to faces, including the ghost faces
