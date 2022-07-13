@@ -118,6 +118,9 @@ London::EvolveLondonJ (amrex::Real dt)
                 amrex::Real const mu_interp = CoarsenIO::Interp(mu_arr, mu_stag, jy_stag,
                                                                 macro_cr, i, j, k, scomp);
                 jy_arr(i,j,k) += dt * lambda_sq_inv/mu_interp * Ey_arr(i,j,k);
+                if ( i == 16 and j == 16 and k == 81) {
+                  amrex::Print() << dt << "(i,j,k) : " << i << "," << j << "," << k << " jy " << jy_arr(i,j,k) << " Ey " << Ey_arr(i,j,k) << "\n";
+                }
             }
         },
         [=] AMREX_GPU_DEVICE (int i, int j, int k) {
@@ -128,8 +131,11 @@ London::EvolveLondonJ (amrex::Real dt)
             }
         }
     );
+        const int i = 16;
+        const int j = 16;
+        const int k = 81;
+        amrex::AllPrintToFile("FieldOutput") << warpx.getistep(0) << " " << warpx.gett_new(0) << " " << dt << "(i,j,k) : " << i << "," << j << "," << k << " jy " << jy_arr(i,j,k) << " Ey " << Ey_arr(i,j,k) << "\n";
     }
-
 }
 
 void
