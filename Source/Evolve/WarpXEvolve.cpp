@@ -409,7 +409,7 @@ WarpX::OneStep_nosub (Real cur_time)
     ExecutePythonCallback("particlescraper");
     ExecutePythonCallback("beforedeposition");
 
-    PushParticlesandDepose(cur_time);
+//    PushParticlesandDepose(cur_time);
 #ifndef WARPX_MAG_LLG
     if (WarpX::yee_coupled_solver_algo == CoupledYeeSolver::MaxwellLondon) {
         amrex::Print() << " in evolve london j\n";
