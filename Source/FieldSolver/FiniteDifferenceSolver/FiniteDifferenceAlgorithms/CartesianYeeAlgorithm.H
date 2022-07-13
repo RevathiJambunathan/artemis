@@ -183,6 +183,9 @@ struct CartesianYeeAlgorithm {
         using namespace amrex;
         Real const inv_dz = coefs_z[0];
 #if defined WARPX_DIM_3D
+        if (i == 16 and j == 16 and k == 81) {
+            amrex::Print() << " F( ijk) " << F(i,j,k,ncomp) << " k-1 " << F(i,j,k-1,ncomp)  << " inv dz " << inv_dz << "\n";
+        }
         return inv_dz*( F(i,j,k,ncomp) - F(i,j,k-1,ncomp) );
 #elif (defined WARPX_DIM_XZ)
         return inv_dz*( F(i,j,k,ncomp) - F(i,j-1,k,ncomp) );

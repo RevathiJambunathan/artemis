@@ -223,10 +223,16 @@ void FiniteDifferenceSolver::MacroscopicEvolveECartesian (
                                            Ex_stag, macro_cr, i, j, k, scomp);
                 amrex::Real alpha = T_MacroAlgo::alpha( sigma_interp, epsilon_interp, dt);
                 amrex::Real beta = T_MacroAlgo::beta( sigma_interp, epsilon_interp, dt);
+                if ( i == 16 and j == 16 and k == 81) {
+                    amrex::Print() << " Ex before : " << Ex(i,j,k) << " alpha : " << alpha << " beta : " << beta  <<  " downward dx of Hz " << T_Algo::DownwardDz(Hy, coefs_z, n_coefs_z, i, j, k,0)  << " " << " downward dz of Hz : " << T_Algo::DownwardDy(Hz, coefs_y, n_coefs_y, i, j, k,0) << " jx : " << jx (i,j,k) ;
+                }
                 Ex(i, j, k) = alpha * Ex(i, j, k)
                             + beta * ( - T_Algo::DownwardDz(Hy, coefs_z, n_coefs_z, i, j, k,0)
                                        + T_Algo::DownwardDy(Hz, coefs_y, n_coefs_y, i, j, k,0)
                                      ) - beta * jx(i, j, k);
+                if ( i == 16 and j == 16 and k == 81) {
+                    amrex::Print() << " Ex after : " << Ex(i,j,k) << "\n";
+                }
             },
 
             [=] AMREX_GPU_DEVICE (int i, int j, int k){
