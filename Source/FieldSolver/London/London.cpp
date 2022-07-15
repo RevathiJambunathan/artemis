@@ -214,21 +214,21 @@ London::EvolveLondonJPML(const amrex::Real dt, std::array<amrex::MultiFab*, 3> E
         [=] AMREX_GPU_DEVICE (int i, int j, int k) {
             if (sc_arr(i,j,k)==1 and sc_arr(i+1,j,k)==1) {
                 amrex::Real const mu_interp = 1.25663706212e-06;
-                if (sumJInPML == 1) jx_arr(i,j,k) = 0._rt;
+                if (sumJInPML == 0) jx_arr(i,j,k) = 0._rt;
                 jx_arr(i,j,k) += dt * lambda_sq_inv/mu_interp * Ex_arr(i,j,k);
             }
         },
         [=] AMREX_GPU_DEVICE (int i, int j, int k) {
             if (sc_arr(i,j,k)==1 and sc_arr(i,j+1,k)==1) {
                 amrex::Real const mu_interp = 1.25663706212e-06;
-                if (sumJInPML == 1) jy_arr(i,j,k) = 0._rt;
+                if (sumJInPML == 0) jy_arr(i,j,k) = 0._rt;
                 jy_arr(i,j,k) += dt * lambda_sq_inv/mu_interp * Ey_arr(i,j,k);
             }
         },
         [=] AMREX_GPU_DEVICE (int i, int j, int k) {
             if (sc_arr(i,j,k)==1 and sc_arr(i,j,k+1)==1) {
                 amrex::Real const mu_interp = 1.25663706212e-06;
-                if (sumJInPML == 1) jz_arr(i,j,k) = 0._rt;
+                if (sumJInPML == 0) jz_arr(i,j,k) = 0._rt;
                 jz_arr(i,j,k) += dt * lambda_sq_inv/mu_interp * Ez_arr(i,j,k);
             }
         }
