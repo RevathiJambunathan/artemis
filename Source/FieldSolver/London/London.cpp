@@ -11,11 +11,19 @@
 #include <AMReX_MultiFab.H>
 #include <AMReX_iMultiFab.H>
 #include <AMReX_Scan.H>
+#include "BoundaryConditions/PML.H"
+#include "BoundaryConditions/PML_current.H"
+#include "BoundaryConditions/PMLComponent.H"
+#include "Utils/CoarsenIO.H"
+#include "Utils/WarpXConst.H"
+#include <AMReX_Gpu.H>
+#include <AMReX.H>
 
 #include <AMReX_BaseFwd.H>
 
 #include <memory>
 #include <sstream>
+using namespace amrex::literals;
 
 London::London ()
 {
@@ -32,6 +40,8 @@ London::ReadParameters ()
     Store_parserString(pp_london, "superconductor_function(x,y,z)", m_str_superconductor_function);
     m_superconductor_parser = std::make_unique<amrex::Parser>(
                                    makeParser(m_str_superconductor_function, {"x", "y", "z"}));
+
+    pp_london.get("SumJInPML", m_SumJInPML);
 }
 
 void
@@ -165,3 +175,64 @@ London::InitializeSuperconductorMultiFabUsingParser (
     }
 }
 
+
+void
+London::EvolveLondonJPML(const amrex::Real dt, std::array<amrex::MultiFab*, 3> Efield,
+                         std::array<amrex::MultiFab*, 3> jfield,
+                         amrex::MultiFab* sc)
+{
+    amrex::Print() << " in j pml \n";
+    auto& warpx = WarpX::GetInstance();
+    const int lev = 0;
+
+    MacroscopicProperties &macroscopic = warpx.GetMacroscopicProperties();
+    amrex::MultiFab& mu_mf = macroscopic.getmu_mf();
+    amrex::GpuArray<int, 3> const& mu_stag = macroscopic.mu_IndexType;
+    amrex::GpuArray<int, 3> const& jx_stag = jx_IndexType;
+    amrex::GpuArray<int, 3> const& jy_stag = jy_IndexType;
+    amrex::GpuArray<int, 3> const& jz_stag = jz_IndexType;
+    amrex::GpuArray<int, 3> const& macro_cr     = macroscopic.macro_cr_ratio;
+
+    amrex::Real lambda_sq_inv = 1.0/(m_penetration_depth*m_penetration_depth);
+    const int scomp = 0;
+    const int sumJInPML = m_SumJInPML;
+
+    for (amrex::MFIter mfi(*jfield[0], amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi)
+    {
+        amrex::Array4<amrex::Real> const& jx_arr = jfield[0]->array(mfi);
+        amrex::Array4<amrex::Real> const& jy_arr = jfield[1]->array(mfi);
+        amrex::Array4<amrex::Real> const& jz_arr = jfield[2]->array(mfi);
+        amrex::Array4<amrex::Real> const& Ex_arr = Efield[0]->array(mfi);
+        amrex::Array4<amrex::Real> const& Ey_arr = Efield[1]->array(mfi);
+        amrex::Array4<amrex::Real> const& Ez_arr = Efield[2]->array(mfi);
+        amrex::Array4<amrex::Real> const& sc_arr = sc->array(mfi);
+        amrex::Box const& tjx = mfi.tilebox(jfield[0]->ixType().toIntVect());
+        amrex::Box const& tjy = mfi.tilebox(jfield[1]->ixType().toIntVect());
+        amrex::Box const& tjz = mfi.tilebox(jfield[2]->ixType().toIntVect());
+
+        amrex::ParallelFor(tjx, tjy, tjz,
+        [=] AMREX_GPU_DEVICE (int i, int j, int k) {
+            if (sc_arr(i,j,k)==1 and sc_arr(i+1,j,k)==1) {
+                amrex::Real const mu_interp = 1.25663706212e-06;
+                if (sumJInPML == 1) jx_arr(i,j,k) = 0._rt;
+                jx_arr(i,j,k) += dt * lambda_sq_inv/mu_interp * Ex_arr(i,j,k);
+            }
+        },
+        [=] AMREX_GPU_DEVICE (int i, int j, int k) {
+            if (sc_arr(i,j,k)==1 and sc_arr(i,j+1,k)==1) {
+                amrex::Real const mu_interp = 1.25663706212e-06;
+                if (sumJInPML == 1) jy_arr(i,j,k) = 0._rt;
+                jy_arr(i,j,k) += dt * lambda_sq_inv/mu_interp * Ey_arr(i,j,k);
+            }
+        },
+        [=] AMREX_GPU_DEVICE (int i, int j, int k) {
+            if (sc_arr(i,j,k)==1 and sc_arr(i,j,k+1)==1) {
+                amrex::Real const mu_interp = 1.25663706212e-06;
+                if (sumJInPML == 1) jz_arr(i,j,k) = 0._rt;
+                jz_arr(i,j,k) += dt * lambda_sq_inv/mu_interp * Ez_arr(i,j,k);
+            }
+        }
+    );
+    }
+
+}

@@ -684,6 +684,13 @@ PML::PML (const int lev, const BoxArray& grid_ba, const DistributionMapping& gri
         pml_eps_fp = std::make_unique<MultiFab>(ba, dm, 1, nge);
         pml_mu_fp = std::make_unique<MultiFab>(ba, dm, 1, nge);
         pml_sigma_fp = std::make_unique<MultiFab>(ba, dm, 1, nge);
+        if (WarpX::yee_coupled_solver_algo == CoupledYeeSolver::MaxwellLondon) {
+            const amrex::IntVect nodal_flag = amrex::IntVect::TheNodeVector();            
+            pml_sc_fp = std::make_unique<MultiFab>( amrex::convert(ba,nodal_flag), dm, 1, nge);
+            auto& london = WarpX::GetInstance().getLondon();
+            london.InitializeSuperconductorMultiFabUsingParser(pml_sc_fp.get(),
+                london.m_superconductor_parser->compile<3>(), lev);
+        }
 
         // Initializing macroparameter multifab //
         auto& warpx = WarpX::GetInstance();
@@ -880,6 +887,13 @@ PML::PML (const int lev, const BoxArray& grid_ba, const DistributionMapping& gri
             pml_eps_cp = std::make_unique<MultiFab>(cba, dm, 1, nge);
             pml_mu_cp = std::make_unique<MultiFab>(cba, dm, 1, nge);
             pml_sigma_cp = std::make_unique<MultiFab>(cba, dm, 1, nge);
+            if (WarpX::yee_coupled_solver_algo == CoupledYeeSolver::MaxwellLondon) {
+                const amrex::IntVect nodal_flag = amrex::IntVect::TheNodeVector();            
+                pml_sc_cp = std::make_unique<MultiFab>( amrex::convert(ba,nodal_flag), dm, 1, nge);
+                auto& london = WarpX::GetInstance().getLondon();
+                london.InitializeSuperconductorMultiFabUsingParser(pml_sc_cp.get(),
+                    london.m_superconductor_parser->compile<3>(), lev);
+            }
 
             // Initializing macroparameter multifab //
             auto& warpx = WarpX::GetInstance();
@@ -1198,6 +1212,19 @@ MultiFab*
 PML::GetF_cp ()
 {
     return pml_F_cp.get();
+}
+
+// hack for london
+amrex::MultiFab*
+PML::Getsc_fp()
+{
+    return pml_sc_fp.get();
+}
+
+amrex::MultiFab*
+PML::Getsc_cp()
+{
+    return pml_sc_cp.get();
 }
 
 // Return macroscopic pml multifabs

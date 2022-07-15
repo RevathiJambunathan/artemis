@@ -171,6 +171,9 @@ public:
     // Used when WarpX::do_pml_divb_cleaning = true
     amrex::MultiFab* GetG_fp ();
     amrex::MultiFab* GetG_cp ();
+    // hack for london
+    amrex::MultiFab* Getsc_fp ();
+    amrex::MultiFab* Getsc_cp ();
 
     const MultiSigmaBox& GetMultiSigmaBox_fp () const
         { return *sigba_fp; }
@@ -266,6 +269,9 @@ private:
     // Used when WarpX::do_pml_divb_cleaning = true
     std::unique_ptr<amrex::MultiFab> pml_G_fp;
     std::unique_ptr<amrex::MultiFab> pml_G_cp;
+    // hack for london
+    std::unique_ptr<amrex::MultiFab> pml_sc_fp;
+    std::unique_ptr<amrex::MultiFab> pml_sc_cp;
 
     std::unique_ptr<MultiSigmaBox> sigba_fp;
     std::unique_ptr<MultiSigmaBox> sigba_cp;

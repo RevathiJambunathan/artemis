@@ -28,6 +28,9 @@ public:
     void ReadParameters ();
     void InitData ();
     void EvolveLondonJ (amrex::Real dt);
+    void EvolveLondonJPML(const amrex::Real dt, std::array<amrex::MultiFab*, 3> Efield,
+                         std::array<amrex::MultiFab*, 3> jfield,
+                         amrex::MultiFab* sc);
 
     void InitializeSuperconductorMultiFabUsingParser ( amrex::MultiFab *sc_mf,
                                                        amrex::ParserExecutor<3> const& sc_parser, const int lev);
@@ -36,6 +39,7 @@ public:
     std::string m_str_superconductor_function;
     std::unique_ptr<amrex::Parser> m_superconductor_parser;
     std::unique_ptr<amrex::MultiFab> m_superconductor_mf;
+    int m_SumJInPML;
 
      /** Gpu Vector with index type of the jx multifab */
      amrex::GpuArray<int, 3> jx_IndexType;
