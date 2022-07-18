@@ -733,13 +733,13 @@ PML::PML (const int lev, const BoxArray& grid_ba, const DistributionMapping& gri
     pml_H_fp[1]->setVal(0.0);
     pml_H_fp[2]->setVal(0.0);
 #endif
-
+    // hack for london
     pml_j_fp[0] = std::make_unique<MultiFab>(amrex::convert( ba,
-        WarpX::GetInstance().getcurrent_fp(0,0).ixType().toIntVect() ), dm, 1, ngb );
+        WarpX::GetInstance().getcurrent_fp(0,0).ixType().toIntVect() ), dm, 2, ngb );
     pml_j_fp[1] = std::make_unique<MultiFab>(amrex::convert( ba,
-        WarpX::GetInstance().getcurrent_fp(0,1).ixType().toIntVect() ), dm, 1, ngb );
+        WarpX::GetInstance().getcurrent_fp(0,1).ixType().toIntVect() ), dm, 2, ngb );
     pml_j_fp[2] = std::make_unique<MultiFab>(amrex::convert( ba,
-        WarpX::GetInstance().getcurrent_fp(0,2).ixType().toIntVect() ), dm, 1, ngb );
+        WarpX::GetInstance().getcurrent_fp(0,2).ixType().toIntVect() ), dm, 2, ngb );
 
     pml_j_fp[0]->setVal(0.0);
     pml_j_fp[1]->setVal(0.0);
