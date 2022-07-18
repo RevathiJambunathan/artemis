@@ -158,6 +158,9 @@ void FiniteDifferenceSolver::MacroscopicEvolveEPMLCartesian (
         Array4<Real> const& By = Bfield[1]->array(mfi);
         Array4<Real> const& Bz = Bfield[2]->array(mfi);
 #endif
+        Array4<Real> const& jx = Jfield[0]->array(mfi);
+        Array4<Real> const& jy = Jfield[1]->array(mfi);
+        Array4<Real> const& jz = Jfield[2]->array(mfi);
         // material prop //
         amrex::Array4<amrex::Real> const& sigma_arr = sigma_mf->array(mfi);
         amrex::Array4<amrex::Real> const& eps_arr = eps_mf->array(mfi);
@@ -207,10 +210,12 @@ void FiniteDifferenceSolver::MacroscopicEvolveEPMLCartesian (
 
                 Ex(i, j, k, PMLComp::xz) = alpha * Ex(i, j, k, PMLComp::xz) - beta * (
                     T_Algo::DownwardDz(Hy, coefs_z, n_coefs_z, i, j, k, PMLComp::yx)
-                  + T_Algo::DownwardDz(Hy, coefs_z, n_coefs_z, i, j, k, PMLComp::yz) );
+                  + T_Algo::DownwardDz(Hy, coefs_z, n_coefs_z, i, j, k, PMLComp::yz) )
+                  - beta * jx(i, j, k, PMLComp::xz);
                 Ex(i, j, k, PMLComp::xy) = alpha * Ex(i, j, k, PMLComp::xy) + beta * (
                     T_Algo::DownwardDy(Hz, coefs_y, n_coefs_y, i, j, k, PMLComp::zx)
-                  + T_Algo::DownwardDy(Hz, coefs_y, n_coefs_y, i, j, k, PMLComp::zy) );
+                  + T_Algo::DownwardDy(Hz, coefs_y, n_coefs_y, i, j, k, PMLComp::zy) )
+                  - beta * jx(i, j, k, PMLComp::xy);
             },
 
             [=] AMREX_GPU_DEVICE (int i, int j, int k){
@@ -225,10 +230,12 @@ void FiniteDifferenceSolver::MacroscopicEvolveEPMLCartesian (
 
                 Ey(i, j, k, PMLComp::yx) = alpha * Ey(i, j, k, PMLComp::yx) - beta * (
                     T_Algo::DownwardDx(Hz, coefs_x, n_coefs_x, i, j, k, PMLComp::zx)
-                  + T_Algo::DownwardDx(Hz, coefs_x, n_coefs_x, i, j, k, PMLComp::zy) );
+                  + T_Algo::DownwardDx(Hz, coefs_x, n_coefs_x, i, j, k, PMLComp::zy) )
+                  - beta * jy(i, j, k, PMLComp::yx);
                 Ey(i, j, k, PMLComp::yz) = alpha * Ey(i, j, k, PMLComp::yz) + beta * (
                     T_Algo::DownwardDz(Hx, coefs_z, n_coefs_z, i, j, k, PMLComp::xy)
-                  + T_Algo::DownwardDz(Hx, coefs_z, n_coefs_z, i, j, k, PMLComp::xz) );
+                  + T_Algo::DownwardDz(Hx, coefs_z, n_coefs_z, i, j, k, PMLComp::xz) )
+                  - beta * jy(i, j, k, PMLComp::yz);
             },
 
             [=] AMREX_GPU_DEVICE (int i, int j, int k){
@@ -243,10 +250,12 @@ void FiniteDifferenceSolver::MacroscopicEvolveEPMLCartesian (
 
                 Ez(i, j, k, PMLComp::zy) = alpha * Ez(i, j, k, PMLComp::zy) - beta * (
                     T_Algo::DownwardDy(Hx, coefs_y, n_coefs_y, i, j, k, PMLComp::xy)
-                  + T_Algo::DownwardDy(Hx, coefs_y, n_coefs_y, i, j, k, PMLComp::xz) );
+                  + T_Algo::DownwardDy(Hx, coefs_y, n_coefs_y, i, j, k, PMLComp::xz) )
+                  - beta * jz(i, j, k, PMLComp::zy);
                 Ez(i, j, k, PMLComp::zx) = alpha * Ez(i, j, k, PMLComp::zx) + beta * (
                     T_Algo::DownwardDx(Hy, coefs_x, n_coefs_x, i, j, k, PMLComp::yx)
-                  + T_Algo::DownwardDx(Hy, coefs_x, n_coefs_x, i, j, k, PMLComp::yz) );
+                  + T_Algo::DownwardDx(Hy, coefs_x, n_coefs_x, i, j, k, PMLComp::yz) )
+                  - beta * jz(i, j, k, PMLComp::zx);
             }
 
         );
