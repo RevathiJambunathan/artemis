@@ -221,6 +221,9 @@ public:
     void FillBoundaryH (PatchType patch_type);
 #endif
     void FillBoundaryG (PatchType patch_type);
+    // london hack
+    void FillBoundaryJ ();
+    void FillBoundaryJ (PatchType patch_type);
 
     bool ok () const { return m_ok; }
 

@@ -1468,7 +1468,35 @@ PML::FillBoundary ()
     FillBoundaryB();
     FillBoundaryF();
     FillBoundaryG();
+// for london
+    FillBoundaryJ();
 }
+
+void
+PML::FillBoundaryJ ()
+{
+    FillBoundaryJ(PatchType::fine);
+    FillBoundaryJ(PatchType::coarse);
+}
+
+void
+PML::FillBoundaryJ (PatchType patch_type)
+{
+    if (patch_type == PatchType::fine && pml_j_fp[0] && pml_j_fp[0]->nGrowVect().max() > 0)
+    {
+        const auto& period = m_geom->periodicity();
+        Vector<MultiFab*> mf{pml_j_fp[0].get(),pml_j_fp[1].get(),pml_j_fp[2].get()};
+        WarpXCommUtil::FillBoundary(mf, period);
+    }
+    else if (patch_type == PatchType::coarse && pml_j_cp[0] && pml_j_cp[0]->nGrowVect().max() > 0)
+    {
+        const auto& period = m_cgeom->periodicity();
+        Vector<MultiFab*> mf{pml_j_cp[0].get(),pml_j_cp[1].get(),pml_j_cp[2].get()};
+        WarpXCommUtil::FillBoundary(mf, period);
+    }
+
+}
+
 
 void
 PML::FillBoundaryE ()

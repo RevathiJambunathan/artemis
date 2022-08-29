@@ -547,7 +547,7 @@ WarpX::FillBoundaryJ (const int lev, const PatchType patch_type, const amrex::In
                 (patch_type == PatchType::fine) ? pml[lev]->Getj_fp() : pml[lev]->Getj_cp();
 
             pml[lev]->Exchange(mf_pml, mf, patch_type, do_pml_in_domain);
-            pml[lev]->FillBoundaryE(patch_type);
+            pml[lev]->FillBoundaryJ(patch_type);
         }
     // note that fillBoundaryJ is not done in RZ as it is used only in 3D for london module.
     }
